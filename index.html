@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIP助手</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #09090b;
+            color: #a1a1aa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            /* 移除背景色 */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0rem;
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e2e2e2;
+            margin-bottom: 1rem;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            background-color: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            color: #e2e2e2;
+        }
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .action-btn {
+            background-color: #27272a;
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #3f3f46;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .action-btn:hover {
+            background-color: #3f3f46;
+        }
+        .action-btn.primary {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .action-btn.primary:hover {
+            background-color: #e5e5e5;
+        }
+        /* 添加分割线样式 */
+        .divider {
+            border-top: 1px solid #27272a;
+            margin: 0.5rem 0.5rem;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        #hotTopicsList {
+            position: absolute;
+            width: 100%;
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            z-index: 10;
+            max-height: 200px; /* 添加最大高度 */
+            overflow-y: auto; /* 添加垂直滚动条 */
+        }
+        #hotTopicsList div {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+        #hotTopicsList div:hover {
+            background-color: #27272a;
+        }
+        .content-area {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .content-card {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            position: relative;
+        }
+
+        .content-card:hover {
+            background-color: #27272a;
+        }
+
+        .content-card h3 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #a1a1aa;
+            margin-bottom: 0.25rem;
+        }
+
+        .content-card .content {
+            color: #71717a;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .content-card .delete-btn {
+            opacity: 0;
+            background-color: transparent;
+            color: #52525b;
+            border: none;
+            padding: 0.25rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .content-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .topic-search-container {
+            display: flex;
+            align-items: center;
+            gap: 5%; /* 中间间隔 */
+            width: 100%; /* 确保容器占满宽度 */
+        }
+
+        .topic-input-container {
+            flex: 1; /* 让输入框容器占据剩余空间 */
+            position: relative; /* 为绝对定位的下拉列表提供参考 */
+        }
+
+        #topicInput {
+            width: 100%; /* 确保输入框占满容器宽度 */
+        }
+
+        #searchBtn {
+            flex: 0 0 25%; /* 保持搜索按钮宽度不变 */
+        }
+
+        /* 修改标签颜色 */
+        .text-sm.font-medium {
+            color: #e2e2e2; /* 更白的颜色 */
+        }
+
+        /* 调整生成文案按钮样式 */
+        .action-btn.primary {
+            background-color: #ffffff;
+            color: #000000;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            flex-grow: 1;
+            margin-left: 10px; /* 添加左侧间隙 */
+            text-align: center;
+        }
+
+        /* 容器样式 */
+        .button-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .button-container {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .radio-group {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+        }
+
+        .radio-group label {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+          margin-right: 0.5rem;
+        }
+
+        .action-btn.primary {
+          background-color: #ffffff;
+          color: #000000;
+          border-radius: 0.375rem;
+          padding: 0.5rem 1rem;
+          font-weight: 500;
+          transition: background-color 0.2s;
+          text-align: center;
+        }
+
+        .action-btn.primary:hover {
+          background-color: #e5e5e5;
+        }
+
+        /* 如果需要调整 Label 的样式 */
+        .Label {
+          color: #a1a1aa;
+          transition: background-color 0.2s, color 0.2s;
+        }
+
+        .Label:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .bg-destructive {
+            background-color: #ef4444;
+        }
+        .text-destructive-foreground {
+            color: #ffffff;
+        }
+        .bg-secondary {
+            background-color: #374151;
+        }
+        .text-secondary-foreground {
+            color: #ffffff;
+        }
+        .text-muted-foreground {
+            color: #9ca3af;
+        }
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1;
+        }
+        .transition-opacity {
+            transition-property: opacity;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+
+        #generatedTitle {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        #generatedContent {
+            color: #ffffff;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background-color: #3b82f6;
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .copy-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* 添加这些新的样式 */
+        @media (max-width: 640px) {
+            .topic-search-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .topic-input-container {
+                width: 100%;
+            }
+
+            #searchBtn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">AIP助手</h1>
+        
+        <div class="section">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label for="persona" class="text-sm font-medium mb-1 block">人设</label>
+                    <textarea id="persona" placeholder="请输入人设，包括工作经验、专长和成就。" rows="4" class="resize-none"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="businessGoal" class="text-sm font-medium mb-1 block">变现路径</label>
+                    <textarea id="businessGoal" placeholder="请描述变现路径，如课程、服务、产品" rows="4" class="resize-none"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 添加分割线 -->
+        <div class="divider"></div>
+        
+        <div class="section">
+            <div class="input-group">
+                <label for="topicInput" class="text-sm font-medium mb-1 block">选题</label>
+                <div class="topic-search-container">
+                    <div class="topic-input-container">
+                        <input type="text" id="topicInput" placeholder="请输入选题" class="w-full">
+                        <div id="hotTopicsList" class="hidden"></div>
+                    </div>
+                    <button onclick="searchContent()" id="searchBtn" class="action-btn">
+                        搜索文案
+                    </button>
+                </div>
+            </div>
+            
+            <div class="input-group mt-4">
+                <label for="customContent" class="text-sm font-medium mb-1 block">内容</label>
+                <textarea id="customContent" placeholder="请输入参考内容" rows="4" class="resize-none"></textarea>
+            </div>
+
+            <!-- 参考结果区域 -->
+            <div id="referenceResultsContainer" class="mt-4 hidden">
+                <label class="text-sm font-medium mb-1 block">参考内容</label>
+                <div id="referenceResults"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="button-container">
+                <div class="radio-group mb-2">
+                    <label>
+                        <input type="radio" name="aiModel" value="douban" checked>
+                        <span>标准</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="aiModel" value="claude">
+                        <span>专业</span>
+                    </label>
+                </div>
+                
+                <button id="generateBtn" onclick="generateContent()" class="action-btn primary w-full mt-2">
+                    生成文案 →
+                </button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 id="generatedTitle" class="text-xl font-bold mb-4"></h2>
+            <div id="generatedContent"></div>
+            <!-- <button id="copyBtn" class="copy-btn" onclick="copyGeneratedContent()">复制文案</button> -->
+        </div>
+    </div>
+
+    <script>
+        // 全局变量来存储热点话题
+        let hotTopics = [];
+        
+        // 页面加载获取热点话题，但不显示
+        window.onload = function() {
+            fetchHotTopics();
+            setupTopicInput();
+        };
+        
+        function fetchHotTopics() {
+            const myHeaders = new Headers({
+                "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Host": "api.coze.cn",
+                "Connection": "keep-alive"
+            });
+        
+            const raw = JSON.stringify({
+                "conversation_id": "123",
+                "bot_id": "7395453761768063002",
+                "user": "29032201862555",
+                "query": "热搜",
+                "stream": false
+            });
+        
+            fetch("https://api.coze.cn/open_api/v2/chat", {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            })
+            .then(response => response.json())
+            .then(result => {
+                const content = JSON.parse(result.messages[0].content);
+                hotTopics = content.output.find(platform => platform.name === "抖音").data.map(item => item.title);
+                console.log("Hot topics fetched:", hotTopics);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function setupTopicInput() {
+            const topicInput = document.getElementById('topicInput');
+            const hotTopicsList = document.getElementById('hotTopicsList');
+        
+            topicInput.addEventListener('focus', () => {
+                if (hotTopics.length > 0) {
+                    updateHotTopicsList(hotTopics);
+                    hotTopicsList.style.display = 'block';
+                }
+            });
+        
+            topicInput.addEventListener('input', () => {
+                if (topicInput.value.trim() !== '') {
+                    const filteredTopics = hotTopics.filter(topic => 
+                        topic.toLowerCase().includes(topicInput.value.toLowerCase())
+                    );
+                    updateHotTopicsList(filteredTopics);
+                    hotTopicsList.style.display = 'block';
+                } else {
+                    updateHotTopicsList(hotTopics);
+                    hotTopicsList.style.display = 'block';
+                }
+            });
+        
+            topicInput.addEventListener('blur', () => {
+                setTimeout(() => hotTopicsList.style.display = 'none', 200);
+            });
+        }
+        
+        function updateHotTopicsList(topics) {
+            const hotTopicsList = document.getElementById('hotTopicsList');
+            if (topics.length === 0) {
+                hotTopicsList.innerHTML = '<div>没有匹配话题</div>';
+                return;
+            }
+            hotTopicsList.innerHTML = '';
+            topics.slice(0, 10).forEach(topic => {
+                const div = document.createElement('div');
+                div.textContent = topic;
+                div.onclick = () => {
+                    document.getElementById('topicInput').value = topic;
+                    hotTopicsList.style.display = 'none';
+                };
+                hotTopicsList.appendChild(div);
+            });
+        }
+        
+        function searchContent() {
+            const topic = document.getElementById('topicInput').value.trim();
+            if (!topic) {
+                alert('请输入选题');
+                return;
+            }
+        
+            const searchBtn = document.getElementById('searchBtn');
+            const originalText = searchBtn.textContent;
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '搜索中...';
+        
+            const myHeaders = new Headers({
+                "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Host": "api.coze.cn",
+                "Connection": "keep-alive"
+            });
+        
+            const raw = JSON.stringify({
+                "conversation_id": "123",
+                "bot_id": "7399539580141387810",
+                "user": "29032201862555",
+                "query": topic,
+                "stream": false
+            });
+        
+            fetch("https://api.coze.cn/open_api/v2/chat", {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw
+            })
+            .then(response => response.json())
+            .then(result => {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = originalText;
+                const content = JSON.parse(result.messages[0].content).output;
+                displaySearchContent(content);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = originalText;
+                alert('搜索失败，请稍后再试');
+            });
+        }
+        
+        function displaySearchContent(content) {
+            console.log('Content received:', content);
+            const referenceResults = document.getElementById('referenceResults');
+            const referenceResultsContainer = document.getElementById('referenceResultsContainer');
+            
+            referenceResultsContainer.classList.remove('hidden');
+            
+            const contentItems = content.split('\n**标题：**').filter(item => item.trim() !== '');
+            
+            if (contentItems.length > 0) {
+                contentItems.forEach((item, index) => {
+                    const titleMatch = item.match(/^(.*?)(?:\n|$)/);
+                    const title = titleMatch ? titleMatch[1].trim() : '';
+                    
+                    const asrMatch = item.match(/\n\*\*视频ASR文本：\*\*([\s\S]*?)(?:\n\*\*|$)/);
+                    const asr = asrMatch ? asrMatch[1].trim() : '';
+                    
+                    const card = createContentCard(asr, index, title);
+                    referenceResults.appendChild(card);
+                });
+            } else {
+                const card = createContentCard(content, referenceResults.children.length);
+                referenceResults.appendChild(card);
+            }
+        }
+        
+        document.getElementById('customContent').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                addCustomContent(this.value);
+                this.value = '';
+            }
+        });
+        
+        function addCustomContent(content) {
+            const referenceResults = document.getElementById('referenceResults');
+            const referenceResultsContainer = document.getElementById('referenceResultsContainer');
+            
+            referenceResultsContainer.classList.remove('hidden');
+            
+            const card = createContentCard(content, 0);
+            
+            // 如果已经有卡片，将新卡片插入到第一个位置
+            if (referenceResults.firstChild) {
+                referenceResults.insertBefore(card, referenceResults.firstChild);
+            } else {
+                referenceResults.appendChild(card);
+            }
+            
+            // 更新其他卡片的索引
+            updateCardIndices();
+        }
+
+        function updateCardIndices() {
+            const cards = document.querySelectorAll('#referenceResults .content-card');
+            cards.forEach((card, index) => {
+                const contentElement = card.querySelector('.content');
+                if (contentElement) {
+                    contentElement.dataset.index = index;
+                }
+            });
+        }
+        
+        function createContentCard(content, index, title = '') {
+            const card = document.createElement('div');
+            card.className = 'content-card';
+            
+            // 如果有标题，说明是搜索结果
+            if (title) {
+                card.innerHTML = `
+                    <h3>
+                        <span>${title}</span>
+                        <button class="delete-btn" onclick="deleteCard(this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </h3>
+                    <p class="content">${content}</p>
+                `;
+            } else {
+                // 用户输入的内容
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <p class="content">${content}</p>
+                        <button class="delete-btn" onclick="deleteCard(this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            return card;
+        }
+        
+        function deleteCard(button) {
+            const card = button.closest('.content-card');
+            card.remove();
+        }
+        
+        function generateContent() {
+            const persona = document.getElementById('persona').value.trim();
+            const businessGoal = document.getElementById('businessGoal').value.trim();
+            const topic = document.getElementById('topicInput').value.trim();
+            const referenceResults = document.querySelectorAll('#referenceResults .content-card');
+            const aiModel = document.querySelector('input[name="aiModel"]:checked').value;
+            
+            if (!persona && !businessGoal && !topic && referenceResults.length === 0) {
+                alert('请至少填写一项信息或添加内容卡片');
+                return;
+            }
+        
+            const contentTexts = Array.from(referenceResults).map(card => card.querySelector('.content').textContent).join('\n\n');
+        
+            const queryParams = {
+                origin: contentTexts,
+                user: persona,
+                goal: businessGoal,
+                topic: topic
+            };
+        
+            // 移除空值
+            Object.keys(queryParams).forEach(key => 
+                queryParams[key] === '' && delete queryParams[key]
+            );
+        
+            const generateBtn = document.getElementById('generateBtn');
+            const generatedContent = document.getElementById('generatedContent');
+            const generatedTitle = document.getElementById('generatedTitle');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '生成中...'; // 添加loading效果
+            
+            // 清除之前的标题和内容
+            generatedTitle.textContent = '';
+            generatedContent.innerHTML = '';
+        
+            if (aiModel === 'douban') {
+                generateContentDouban(queryParams);
+            } else {
+                generateContentClaude(queryParams);
+            }
+        }
+        
+        function generateContentDouban(queryParams) {
+            const myHeaders = new Headers({
+                "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                "Content-Type": "application/json",
+                "Accept": "*/*"
+            });
+        
+            const raw = JSON.stringify({
+                "bot_id": "7399186570660200448",
+                "user_id": "29032201862555",
+                "stream": true,
+                "auto_save_history": true,
+                "additional_messages": [
+                    {
+                        "role": "user",
+                        "content": JSON.stringify(queryParams),
+                        "content_type": "text"
+                    }
+                ]
+            });
+        
+            fetch("https://api.coze.cn/v3/chat", {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw
+            })
+            .then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let fullContent = '';
+        
+                function processText(text) {
+                    const events = text.split('\n\n');
+                    for (const event of events) {
+                        if (event.trim() === '') continue;
+                        const [eventType, data] = event.split('\n');
+                        if (eventType && data) {
+                            const eventName = eventType.split(':')[1];
+                            const jsonData = JSON.parse(data.slice(5)); // Remove "data:" prefix
+        
+                            switch (eventName) {
+                                case 'conversation.message.delta':
+                                    if (jsonData.role === 'assistant' && jsonData.type === 'answer') {
+                                        generatedContent.innerHTML += jsonData.content;
+                                        fullContent += jsonData.content;
+                                    }
+                                    break;
+                                case 'conversation.chat.completed':
+                                    generateBtn.disabled = false;
+                                    generateBtn.innerHTML = '生成文案'; // 恢复按钮状态
+                                    generateTitle(fullContent);
+                                    break;
+                            }
+                        }
+                    }
+                }
+        
+                function pump() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            if (buffer) processText(buffer);
+                            return;
+                        }
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n\n');
+                        buffer = lines.pop();
+                        processText(lines.join('\n\n'));
+                        return pump();
+                    });
+                }
+        
+                return pump();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '生成文案'; // 恢复按钮状态
+                generatedContent.innerHTML = '<p class="error-message">生成失败，请稍后再试</p>';
+            });
+        }
+        
+        function generateContentClaude(queryParams) {
+            const myHeaders = new Headers({
+                "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Host": "api.coze.cn",
+                "Connection": "keep-alive"
+            });
+        
+            const raw = JSON.stringify({
+                "conversation_id": "123",
+                "bot_id": "7405094495979307008",
+                "user": "29032201862555",
+                "query": JSON.stringify(queryParams),
+                "stream": false
+            });
+        
+            fetch("https://api.coze.cn/open_api/v2/chat", {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('API response:', result);
+                const answerMessage = result.messages.find(m => m.type === 'answer');
+                console.log('Answer message:', answerMessage);
+                if (answerMessage) {
+                    try {
+                        const parsedContent = JSON.parse(answerMessage.content);
+                        console.log('Parsed content:', parsedContent);
+                        const content = parsedContent.content;
+                        console.log('Content:', content);
+                    
+                        document.getElementById('generatedContent').innerHTML = `<p>${content}</p>`;
+                    
+                        generateBtn.disabled = false;
+                        generateBtn.innerHTML = '生成文案'; // 恢复按钮状态
+                        generateTitle(content);
+                    } catch (error) {
+                        console.error('Error parsing content:', error);
+                        throw error;
+                    }
+                } else {
+                    console.error('No answer message found in the response');
+                    throw new Error('No answer message found in the response');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '生成文案'; // 恢复按钮状态
+                document.getElementById('generatedContent').innerHTML = '<p class="error-message">生成失败，请稍后再试</p>';
+            });
+        }
+        
+        function generateTitle(content) {
+            const myHeaders = new Headers({
+                "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Host": "api.coze.cn",
+                "Connection": "keep-alive"
+            });
+        
+            const raw = JSON.stringify({
+                "conversation_id": "123",
+                "bot_id": "7403210833641422887",
+                "user": "29032201862555",
+                "query": content,
+                "stream": false
+            });
+        
+            fetch("https://api.coze.cn/open_api/v2/chat", {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            })
+            .then(response => response.json())
+            .then(result => {
+                const title = result.messages[0].content;
+                document.getElementById('generatedTitle').textContent = title;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('generatedTitle').textContent = '无法生成标题';
+            });
+        }
+
+        function copyGeneratedContent() {
+            const title = document.getElementById('generatedTitle').innerText;
+            const content = document.getElementById('generatedContent').innerText;
+            const fullContent = `${title}\n\n${content}`;
+
+            navigator.clipboard.writeText(fullContent).then(() => {
+                alert('文案已复制到剪贴板');
+            }).catch(err => {
+                console.error('无法复制文本: ', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        function copyGeneratedContent() {
+            const title = document.getElementById('generatedTitle').innerText;
+            const content = document.getElementById('generatedContent').innerText;
+            const fullContent = `${title}\n\n${content}`;
+
+            navigator.clipboard.writeText(fullContent).then(() => {
+                alert('文案已复制到剪贴板');
+            }).catch(err => {
+                console.error('无法复制文本: ', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+    </script>
+</body>
+</html>
